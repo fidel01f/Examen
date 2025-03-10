@@ -1,0 +1,69 @@
+CREATE TABLE TA_SMS_MAESTRO (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    fecha_envio DATE NOT NULL
+);
+
+CREATE TABLE TA_SMS_DETALLE (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_campaña INT NOT NULL,
+    telefono VARCHAR(20) NOT NULL,
+    mensaje TEXT NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_campaña) REFERENCES TA_SMS_MAESTRO(id)
+);
+
+
+-- Script para Insertar Campañas y Detalles
+
+-- Insertar campañas en TA_SMS_MAESTRO
+INSERT INTO TA_SMS_MAESTRO (nombre, fecha_envio) VALUES 
+('Campaña Promoción Marzo', '2025-03-10'),
+('Campaña Ofertas Especiales', '2025-03-11'),
+('Campaña Descuentos', '2025-03-12');
+
+-- Obtener los IDs de las campañas insertadas
+DECLARE @id1 INT = (SELECT id FROM TA_SMS_MAESTRO WHERE nombre = 'Campaña Promoción Marzo');
+DECLARE @id2 INT = (SELECT id FROM TA_SMS_MAESTRO WHERE nombre = 'Campaña Ofertas Especiales');
+DECLARE @id3 INT = (SELECT id FROM TA_SMS_MAESTRO WHERE nombre = 'Campaña Descuentos');
+
+-- Insertar detalles en TA_SMS_DETALLE para la primera campaña
+INSERT INTO TA_SMS_DETALLE (id_campaña, telefono, mensaje, estado) VALUES 
+(@id1, '1234567890', 'Descuento del 20% en tu próxima compra', 'Enviado'),
+(@id1, '0987654321', '¡Oferta especial para clientes VIP!', 'Pendiente'),
+(@id1, '1112223333', 'Promoción válida hasta el 15 de marzo', 'Enviado');
+
+-- Insertar detalles en TA_SMS_DETALLE para la segunda campaña
+INSERT INTO TA_SMS_DETALLE (id_campaña, telefono, mensaje, estado) VALUES 
+(@id2, '4445556666', 'Oferta exclusiva: 30% de descuento', 'Pendiente'),
+(@id2, '7778889999', 'Aprovecha nuestras rebajas', 'Enviado'),
+(@id2, '0001112222', 'Solo por hoy, precios especiales', 'Pendiente');
+
+-- Insertar detalles en TA_SMS_DETALLE para la tercera campaña
+INSERT INTO TA_SMS_DETALLE (id_campaña, telefono, mensaje, estado) VALUES 
+(@id3, '5556667777', 'Gran venta de liquidación', 'Enviado'),
+(@id3, '8889990000', 'Compra y gana un descuento adicional', 'Pendiente'),
+(@id3, '2223334444', 'Descuento del 50% en productos seleccionados', 'Enviado');
+
+
+
+
+
+
+
+-- Stored Procedure para obtener campañas por fecha
+CREATE PROCEDURE GetCampaignsByDate @fecha DATE
+AS
+BEGIN
+    SELECT id, nombre FROM TA_SMS_MAESTRO WHERE fecha_envio = @fecha;
+END;
+
+-- Stored Procedure para obtener detalles de campaña paginados
+CREATE PROCEDURE GetCampaignDetails @id_campaña INT, @offset INT, @limit INT
+AS
+BEGIN
+    SELECT * FROM TA_SMS_DETALLE
+    WHERE id_campaña = @id_campaña
+    ORDER BY id
+    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
+END;
